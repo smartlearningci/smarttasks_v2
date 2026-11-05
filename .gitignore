@@ -1,0 +1,17 @@
+# Configuração local e credenciais
+.env
+.env.*
+!.env.example
+
+# Ambientes e ficheiros temporários Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
+# Ficheiros de sistema e editores
+.DS_Store
+.vscode/
+.idea/

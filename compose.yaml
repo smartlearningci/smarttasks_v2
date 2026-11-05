@@ -1,11 +1,30 @@
-# RNF-01/RNF-02: porta host 8080 -> porta interna 8000; IP limita acesso local.
-# Sem volumes: reiniciar o processo elimina as tarefas.
-# RNF-02/US-07: um único serviço, acessível apenas no computador local.
+# RNF-01/RNF-02: aplicação local e PostgreSQL de demonstração.
+# As tarefas continuam exclusivamente na memória do processo FastAPI.
 services:
   smarttasks:
-    # Construir a imagem a partir do Dockerfile local.
+    # Mantém a configuração original da aplicação, sem dependência da BD.
     build: .
-    # Apenas o próprio host pode aceder à aplicação.
     ports:
       - "127.0.0.1:8080:8000" # host 8080 -> container 8000
-    # Sem volumes: as tarefas existem apenas na memória do processo.
+    # Sem volumes para a aplicação: reiniciar o processo perde as tarefas.
+
+  # Serviço de base de dados para uma evolução futura do MVP.
+  # A aplicação ainda não utiliza esta base de dados.
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: smarttasks
+      POSTGRES_USER: smarttasks
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD no .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smarttasks -d smarttasks"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# Volume exclusivo da BD; os serviços usam a rede padrão do Compose.
+volumes:
+  postgres_data:
