@@ -1,0 +1,7 @@
+# RNF-02/US-07: um único serviço, acessível apenas no computador local.
+services:
+  smarttasks:
+    build: .
+    ports:
+      - "127.0.0.1:8080:8000" # host 8080 -> container 8000
+    # Sem volumes: as tarefas existem apenas na memória do processo.

@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="pt-PT"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SmartTasks — TaskFlow</title><link rel="stylesheet" href="/static/style.css"><script defer src="/static/app.js"></script></head>
+<body><main class="shell"><header><p class="eyebrow">TASKFLOW · MVP PEDAGÓGICO</p><h1>SmartTasks</h1><p>Regista e acompanha as tarefas da equipa.</p></header>
+<section class="panel" aria-labelledby="new-heading"><h2 id="new-heading">Nova tarefa</h2><form id="task-form">
+<label for="title">Título <span aria-hidden="true">*</span></label><input id="title" name="title" required maxlength="200" placeholder="Ex.: Preparar relatório" autocomplete="off">
+<label for="description">Descrição (opcional)</label><textarea id="description" name="description" rows="2" placeholder="Detalhes da tarefa"></textarea>
+<button type="submit">Criar tarefa</button></form></section>
+<section class="panel" aria-labelledby="list-heading"><div class="heading"><h2 id="list-heading">Tarefas</h2><span id="count">0 tarefas</span></div><p id="message" role="status" aria-live="polite"></p><ul id="task-list"></ul></section>
+<footer>Dados temporários em memória. Reiniciar a aplicação elimina as tarefas.</footer></main></body></html>

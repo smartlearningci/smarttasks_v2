@@ -1,0 +1,16 @@
+# Evita enviar artefactos locais e ficheiros sensíveis ao contexto de build.
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.coverage
+.env
+.env.*
+*.log
+*.zip
+README.md
+docs/
+tests/
