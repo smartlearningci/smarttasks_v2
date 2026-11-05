@@ -3,7 +3,9 @@
 # RNF-02/US-07: um único serviço, acessível apenas no computador local.
 services:
   smarttasks:
-    # Construir a imagem a partir do Dockerfile local.\n    build: .
-    # Apenas o próprio host pode aceder à aplicação.\n    ports:
+    # Construir a imagem a partir do Dockerfile local.
+    build: .
+    # Apenas o próprio host pode aceder à aplicação.
+    ports:
       - "127.0.0.1:8080:8000" # host 8080 -> container 8000
     # Sem volumes: as tarefas existem apenas na memória do processo.

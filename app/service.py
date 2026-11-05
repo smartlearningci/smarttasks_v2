@@ -10,7 +10,8 @@ class TaskNotFound(Exception):
 class InvalidTransition(Exception):
     pass
 
-class TaskService:\n    """Regras de negócio independentes das rotas HTTP."""
+class TaskService:
+    """Regras de negócio independentes das rotas HTTP."""
     def __init__(self, store: MemoryTaskStore):
         self.store = store
 
@@ -20,7 +21,8 @@ class TaskService:\n    """Regras de negócio independentes das rotas HTTP."""
     def create(self, data: TaskCreate) -> Task:
         return self.store.insert(data.title, data.description)
 
-    def transition(self, task_id: int, target: str) -> Task:\n        """RF-03/RF-04: distingue inexistência de transição repetida."""
+    def transition(self, task_id: int, target: str) -> Task:
+        """RF-03/RF-04: distingue inexistência de transição repetida."""
         task = self.store.get(task_id)
         if task is None:
             raise TaskNotFound("Tarefa não encontrada.")

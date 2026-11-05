@@ -5,11 +5,13 @@ const list = document.querySelector('#task-list');
 const message = document.querySelector('#message');
 const count = document.querySelector('#count');
 const form = document.querySelector('#task-form');
-// Mostra mensagens na região acessível de estado da página.\nfunction notice(text, error = false) {
+// Mostra mensagens na região acessível de estado da página.
+function notice(text, error = false) {
   message.textContent = text;
   message.classList.toggle('error', error);
 }
-// Centraliza pedidos HTTP e converte erros da API em mensagens.\nasync function request(url, options = {}) {
+// Centraliza pedidos HTTP e converte erros da API em mensagens.
+async function request(url, options = {}) {
   let response;
   try { response = await fetch(url, options); }
   catch { throw new Error('Não foi possível comunicar com a aplicação.'); }
@@ -22,7 +24,8 @@ const form = document.querySelector('#task-form');
   }
   return data;
 }
-// Cria uma linha de tarefa usando textContent (sem HTML injetado).\nfunction taskRow(task) {
+// Cria uma linha de tarefa usando textContent (sem HTML injetado).
+function taskRow(task) {
   const li = document.createElement('li');
   li.className = task.status === 'Concluída' ? 'done' : '';
   const info = document.createElement('div'); info.className = 'task-text';
@@ -43,14 +46,16 @@ const form = document.querySelector('#task-form');
   });
   actions.append(button); li.append(info, actions); return li;
 }
-// RF-01: volta a obter a lista atual após cada operação.\nasync function refresh() {
+// RF-01: volta a obter a lista atual após cada operação.
+async function refresh() {
   const tasks = await request('/api/tasks');
   list.replaceChildren(...tasks.map(taskRow));
   count.textContent = `${tasks.length} ${tasks.length === 1 ? 'tarefa' : 'tarefas'}`;
   if (!tasks.length) notice('Ainda não existem tarefas. Cria a primeira!');
   else notice('');
 }
-// RF-02: envia título e descrição e apresenta o resultado.\nform.addEventListener('submit', async event => {
+// RF-02: envia título e descrição e apresenta o resultado.
+form.addEventListener('submit', async event => {
   event.preventDefault();
   const submit = form.querySelector('button[type="submit"]');
   submit.disabled = true;

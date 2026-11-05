@@ -13,7 +13,8 @@ STATIC = Path(__file__).resolve().parent / "static"
 
 def create_app(store: MemoryTaskStore | None = None) -> FastAPI:
     """Permite injetar um armazenamento novo em cada teste."""
-    # Uma instância por teste impede partilha acidental do armazenamento.\n    app = FastAPI(title="SmartTasks", version="1.0.0")
+    # Uma instância por teste impede partilha acidental do armazenamento.
+    app = FastAPI(title="SmartTasks", version="1.0.0")
     service = TaskService(store if store is not None else MemoryTaskStore())
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
@@ -33,7 +34,8 @@ def create_app(store: MemoryTaskStore | None = None) -> FastAPI:
     def create_task(data: TaskCreate):
         return service.create(data)
 
-    def change_state(task_id: int, target: str) -> Task:\n        """Converte erros do domínio em códigos HTTP compreensíveis."""
+    def change_state(task_id: int, target: str) -> Task:
+        """Converte erros do domínio em códigos HTTP compreensíveis."""
         try:
             return service.transition(task_id, target)
         except TaskNotFound as exc:
