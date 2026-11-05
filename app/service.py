@@ -1,3 +1,5 @@
+# Esta camada aplica as regras sem conhecer HTTP, HTML ou Docker.
+# Uma transição só é válida se a tarefa existir e ainda não estiver no destino.
 """Regras de negócio independentes das rotas HTTP — RF-02 a RF-04."""
 from .models import Task, TaskCreate
 from .storage import MemoryTaskStore
@@ -8,7 +10,7 @@ class TaskNotFound(Exception):
 class InvalidTransition(Exception):
     pass
 
-class TaskService:
+class TaskService:\n    """Regras de negócio independentes das rotas HTTP."""
     def __init__(self, store: MemoryTaskStore):
         self.store = store
 
@@ -18,7 +20,7 @@ class TaskService:
     def create(self, data: TaskCreate) -> Task:
         return self.store.insert(data.title, data.description)
 
-    def transition(self, task_id: int, target: str) -> Task:
+    def transition(self, task_id: int, target: str) -> Task:\n        """RF-03/RF-04: distingue inexistência de transição repetida."""
         task = self.store.get(task_id)
         if task is None:
             raise TaskNotFound("Tarefa não encontrada.")

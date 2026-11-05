@@ -1,13 +1,15 @@
+// Fluxo: evento do utilizador -> fetch da API -> atualizar lista no ecrã.
+// Usamos textContent para apresentar títulos sem interpretar HTML fornecido.
 // RF-01 a RF-05 / US-01 a US-05: apresentação e chamadas à API.
 const list = document.querySelector('#task-list');
 const message = document.querySelector('#message');
 const count = document.querySelector('#count');
 const form = document.querySelector('#task-form');
-function notice(text, error = false) {
+// Mostra mensagens na região acessível de estado da página.\nfunction notice(text, error = false) {
   message.textContent = text;
   message.classList.toggle('error', error);
 }
-async function request(url, options = {}) {
+// Centraliza pedidos HTTP e converte erros da API em mensagens.\nasync function request(url, options = {}) {
   let response;
   try { response = await fetch(url, options); }
   catch { throw new Error('Não foi possível comunicar com a aplicação.'); }
@@ -20,7 +22,7 @@ async function request(url, options = {}) {
   }
   return data;
 }
-function taskRow(task) {
+// Cria uma linha de tarefa usando textContent (sem HTML injetado).\nfunction taskRow(task) {
   const li = document.createElement('li');
   li.className = task.status === 'Concluída' ? 'done' : '';
   const info = document.createElement('div'); info.className = 'task-text';
@@ -41,14 +43,14 @@ function taskRow(task) {
   });
   actions.append(button); li.append(info, actions); return li;
 }
-async function refresh() {
+// RF-01: volta a obter a lista atual após cada operação.\nasync function refresh() {
   const tasks = await request('/api/tasks');
   list.replaceChildren(...tasks.map(taskRow));
   count.textContent = `${tasks.length} ${tasks.length === 1 ? 'tarefa' : 'tarefas'}`;
   if (!tasks.length) notice('Ainda não existem tarefas. Cria a primeira!');
   else notice('');
 }
-form.addEventListener('submit', async event => {
+// RF-02: envia título e descrição e apresenta o resultado.\nform.addEventListener('submit', async event => {
   event.preventDefault();
   const submit = form.querySelector('button[type="submit"]');
   submit.disabled = true;

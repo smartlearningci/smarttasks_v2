@@ -1,3 +1,4 @@
+# TestClient simula HTTP sem iniciar Docker; cada teste recebe uma API vazia.
 """Isolamento: cada teste recebe uma aplicação com armazenamento vazio."""
 import pytest
 from fastapi.testclient import TestClient

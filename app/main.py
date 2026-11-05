@@ -1,3 +1,5 @@
+# Fluxo HTTP: rota FastAPI -> serviço de regras -> armazenamento em memória.
+# Pydantic valida entradas (422); exceções de negócio tornam-se 404 ou 409.
 """Camada HTTP e entrega da interface — RF-01 a RF-06."""
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Path as PathParam
@@ -11,7 +13,7 @@ STATIC = Path(__file__).resolve().parent / "static"
 
 def create_app(store: MemoryTaskStore | None = None) -> FastAPI:
     """Permite injetar um armazenamento novo em cada teste."""
-    app = FastAPI(title="SmartTasks", version="1.0.0")
+    # Uma instância por teste impede partilha acidental do armazenamento.\n    app = FastAPI(title="SmartTasks", version="1.0.0")
     service = TaskService(store if store is not None else MemoryTaskStore())
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
@@ -31,7 +33,7 @@ def create_app(store: MemoryTaskStore | None = None) -> FastAPI:
     def create_task(data: TaskCreate):
         return service.create(data)
 
-    def change_state(task_id: int, target: str) -> Task:
+    def change_state(task_id: int, target: str) -> Task:\n        """Converte erros do domínio em códigos HTTP compreensíveis."""
         try:
             return service.transition(task_id, target)
         except TaskNotFound as exc:

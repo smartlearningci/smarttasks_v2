@@ -1,7 +1,9 @@
+# RNF-01/RNF-02: porta host 8080 -> porta interna 8000; IP limita acesso local.
+# Sem volumes: reiniciar o processo elimina as tarefas.
 # RNF-02/US-07: um único serviço, acessível apenas no computador local.
 services:
   smarttasks:
-    build: .
-    ports:
+    # Construir a imagem a partir do Dockerfile local.\n    build: .
+    # Apenas o próprio host pode aceder à aplicação.\n    ports:
       - "127.0.0.1:8080:8000" # host 8080 -> container 8000
     # Sem volumes: as tarefas existem apenas na memória do processo.
