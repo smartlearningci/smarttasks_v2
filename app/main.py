@@ -1,21 +1,44 @@
-# Fluxo HTTP: rota FastAPI -> serviço de regras -> armazenamento em memória.
-# Pydantic valida entradas (422); exceções de negócio tornam-se 404 ou 409.
-"""Camada HTTP e entrega da interface — RF-01 a RF-06."""
+"""API e HTML originais; seleção do armazenamento na inicialização.
+
+O Compose define STORAGE_BACKEND=postgres. Testes antigos injetam memória.
+Nunca regressar silenciosamente à memória se a configuração falhar.
+"""
+import os
+from contextlib import asynccontextmanager
 from pathlib import Path
+
 from fastapi import FastAPI, HTTPException, Path as PathParam
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+
+from .db import connection_kwargs, initialize_schema
 from .models import Task, TaskCreate
 from .service import InvalidTransition, TaskNotFound, TaskService
-from .storage import MemoryTaskStore
+from .storage import MemoryTaskStore, PostgresTaskStore
 
 STATIC = Path(__file__).resolve().parent / "static"
 
-def create_app(store: MemoryTaskStore | None = None) -> FastAPI:
-    """Permite injetar um armazenamento novo em cada teste."""
-    # Uma instância por teste impede partilha acidental do armazenamento.
-    app = FastAPI(title="SmartTasks", version="1.0.0")
-    service = TaskService(store if store is not None else MemoryTaskStore())
+
+def create_app(store: MemoryTaskStore | PostgresTaskStore | None = None) -> FastAPI:
+    """Preserva a API e permite injetar armazenamento isolado nos testes."""
+    if store is None:
+        backend = os.environ.get("STORAGE_BACKEND", "memory")
+        if backend == "postgres":
+            store = PostgresTaskStore(connection_kwargs())
+        elif backend == "memory":
+            store = MemoryTaskStore()
+        else:
+            raise RuntimeError("STORAGE_BACKEND inválido: usar memory ou postgres")
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        # A tabela é criada antes do primeiro pedido; falhas impedem arranque.
+        if isinstance(store, PostgresTaskStore):
+            initialize_schema(store.connect_kwargs)
+        yield
+
+    app = FastAPI(title="SmartTasks", version="1.0.0", lifespan=lifespan)
+    service = TaskService(store)
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
     @app.get("/", include_in_schema=False)
@@ -35,7 +58,6 @@ def create_app(store: MemoryTaskStore | None = None) -> FastAPI:
         return service.create(data)
 
     def change_state(task_id: int, target: str) -> Task:
-        """Converte erros do domínio em códigos HTTP compreensíveis."""
         try:
             return service.transition(task_id, target)
         except TaskNotFound as exc:
@@ -52,5 +74,6 @@ def create_app(store: MemoryTaskStore | None = None) -> FastAPI:
         return change_state(task_id, "Aberta")
 
     return app
+
 
 app = create_app()

@@ -1,6 +1,8 @@
-# Versões fixadas para reproduzir o ambiente pedagógico.
+# Dependências fixadas para execução reprodutível.
 fastapi==0.128.2
 uvicorn==0.48.0
 pydantic==2.13.5
 httpx==0.28.1
 pytest==9.0.2
+# Driver PostgreSQL 3 com distribuição binária.
+psycopg[binary]==3.2.10

@@ -2,7 +2,7 @@
 
 ## Objetivo e estado
 
-Esta é a matriz de **especificação** do primeiro MVP: associa os doze requisitos RF/RNF às sete User Stories e a testes previstos. **Ainda não existem testes executáveis nem resultados de execução**; os IDs T-01 a T-13 indicam casos a implementar ou verificar após aprovação da implementação.
+Esta matriz liga os requisitos RF/RNF às sete User Stories e aos testes implementados ou manuais. T-01 a T-13 cobrem o MVP original; T-14 a T-20 verificam a evolução PostgreSQL. Resultados de execução são registados separadamente.
 
 Uma ligação a US representa contribuição para um percurso de utilizador; os requisitos técnicos transversais exigem também testes próprios. A matriz abaixo cobre explicitamente todos os requisitos aprovados.
 
@@ -17,13 +17,13 @@ Uma ligação a US representa contribuição para um percurso de utilizador; os 
 | RF-05 — API HTTP | US-01, US-02, US-03, US-04, US-05 | T-01, T-02, T-03, T-04, T-05, T-06, T-07 | Métodos, rotas, modelos, estados HTTP e erros |
 | RF-06 — Saúde | US-06 | T-08 | 200 e corpo `{"status":"ok"}` |
 | RNF-01 — Acesso local | US-01, US-05, US-07 | T-09 | HTML disponível em localhost:8080 |
-| RNF-02 — Docker | US-07 | T-09 | Dockerfile, Compose, um serviço e portas corretas |
+| RNF-02 — Docker | US-07 | T-09 | Dockerfile, Compose, dois serviços e portas corretas |
 | RNF-03 — Simplicidade | US-01, US-02, US-03, US-04, US-05 | T-01, T-13 | Interface compreensível, sem login, com operações básicas |
 | RNF-04 — Modularidade | US-02, US-03, US-04 (suporte técnico) | T-10 | Inspeção da separação rotas/regras/armazenamento |
-| RNF-05 — Dados temporários | US-01, US-02, US-07 (comportamento operacional) | T-11 | Dados mantidos durante execução; perdidos após reiniciar processo |
+| RNF-05 — Persistência | US-01, US-02, US-07 (comportamento operacional) | T-11 (legado), T-18, T-20 | Dados preservados após reinício; inicialização não destrutiva |
 | RNF-06 — Clareza pedagógica | US-07 (documentação de operação); US-01 a US-06 (código/testes correspondentes) | T-12 | Inspeção objetiva de comentários, README e descrições de testes |
 
-**Cobertura planeada:** 6/6 RF, 6/6 RNF e 7/7 US possuem pelo menos um teste/associação. Esta cobertura é documental, **não significa testes implementados ou aprovados em execução**.
+**Cobertura documental:** 6/6 RF, 6/6 RNF e 7/7 US possuem pelo menos um teste/associação. Esta cobertura documental não substitui a execução real dos testes, especialmente PostgreSQL e Docker.
 
 ## Matriz inversa — User Stories ↔ Requisitos e testes
 
@@ -41,7 +41,7 @@ RNF-04 e RNF-06 são também verificações de qualidade da implementação inte
 
 ## Catálogo de testes previstos
 
-Os casos seguintes especificam **objetivo, pré-condições, ação, resultado esperado e rastreabilidade**; nenhuma linha representa execução real.
+Os casos seguintes especificam **objetivo, pré-condições, ação, resultado esperado e rastreabilidade**. Os resultados de execução são reportados à parte.
 
 | ID | Objetivo | Pré-condições | Ação / entrada | Resultado esperado | RF/RNF | US |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -71,3 +71,20 @@ Para verificações de inspeção manual (por exemplo, modularidade e clareza pe
 - Cobertura por matriz não garante cobertura real: exige código, testes e execução futura.
 - Desempenho, segurança de produção, durabilidade de dados, controlo de concorrência e acessibilidade avançada não são objetivos do primeiro MVP. A ausência de testes desses aspetos não deve ser apresentada como falha face ao âmbito aprovado.
 - Qualquer alteração aos requisitos, estados, endpoints ou critérios de aceitação depende de aprovação adicional.
+
+
+## Evolução PostgreSQL — T-14 a T-20
+
+A suite `tests/test_postgres.py` usa `TEST_DATABASE_URL` para uma **base de testes exclusiva** e esquemas temporários isolados. Sem esta configuração, os testes são ignorados, não considerados aprovados.
+
+| Teste | Objetivo e resultado esperado | Requisitos | US |
+| --- | --- | --- | --- |
+| T-14 | Criar: POST 201 e registo na BD | RF-02, RF-05 | US-02 |
+| T-15 | Listar: GET 200 e tarefas persistidas | RF-01, RF-05 | US-01, US-05 |
+| T-16 | Concluir: estado gravado como Concluída | RF-03, RF-05 | US-03, US-05 |
+| T-17 | Reabrir: estado gravado como Aberta | RF-04, RF-05 | US-04, US-05 |
+| T-18 | Nova instância lê os mesmos dados; reinício Docker manual | RNF-05 | US-01, US-07 |
+| T-19 | Transição repetida: HTTP 409 sem alterar estado | RF-03, RF-04, RF-05 | US-03, US-04 |
+| T-20 | Inicialização repetida preserva tarefas e IDs | RNF-05 | US-07 |
+
+**Nota:** T-11 continua a validar apenas o armazenamento em memória injetado nos testes; não comprova a persistência PostgreSQL. T-09 deve ser complementado com validação real dos dois containers. T-13 continua manual.

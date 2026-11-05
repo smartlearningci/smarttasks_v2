@@ -1,15 +1,22 @@
-# RNF-01/RNF-02: aplicação local e PostgreSQL de demonstração.
-# As tarefas continuam exclusivamente na memória do processo FastAPI.
+# RNF-02: dois serviços na rede padrão; PostgreSQL não publica porta 5432.
 services:
   smarttasks:
-    # Mantém a configuração original da aplicação, sem dependência da BD.
     build: .
     ports:
-      - "127.0.0.1:8080:8000" # host 8080 -> container 8000
-    # Sem volumes para a aplicação: reiniciar o processo perde as tarefas.
+      - "127.0.0.1:8080:8000"
+    # Variáveis separadas evitam problemas com caracteres especiais na password.
+    environment:
+      STORAGE_BACKEND: postgres
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: smarttasks
+      DB_USER: smarttasks
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD no .env}
+    # Esperar que o PostgreSQL aceite ligações antes de iniciar FastAPI.
+    depends_on:
+      db:
+        condition: service_healthy
 
-  # Serviço de base de dados para uma evolução futura do MVP.
-  # A aplicação ainda não utiliza esta base de dados.
   db:
     image: postgres:17
     restart: unless-stopped
@@ -25,6 +32,6 @@ services:
       timeout: 5s
       retries: 5
 
-# Volume exclusivo da BD; os serviços usam a rede padrão do Compose.
+# down preserva o volume; down -v elimina os dados.
 volumes:
   postgres_data:

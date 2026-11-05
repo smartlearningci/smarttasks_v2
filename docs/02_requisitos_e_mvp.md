@@ -20,7 +20,7 @@ As User Stories constam de [04_user_stories.md](04_user_stories.md). A correspon
 
 | Campo | Tipo | Regra |
 | --- | --- | --- |
-| `id` | inteiro | Gerado pelo servidor, único dentro da execução, positivo. |
+| `id` | inteiro | Gerado pelo servidor, único na base de dados, positivo. |
 | `title` | texto | Obrigatório; remover espaços iniciais/finais; rejeitar vazio após limpeza. |
 | `description` | texto ou `null` | Opcional; ausente é interpretado como `null`. |
 | `status` | texto | Apenas `Aberta` ou `Concluída`; nova tarefa começa em `Aberta`. |
@@ -49,17 +49,17 @@ Exemplo de tarefa devolvida: `{"id":1,"title":"Preparar relatório","description
 - **409 — transição incompatível:** concluir tarefa já concluída ou reabrir tarefa já aberta. A tarefa conserva o estado anterior.
 - Não criar tarefas nem alterar estados quando a validação falha.
 - Nas respostas de erro, usar JSON com a propriedade `detail`, em texto ou estrutura explicativa coerente com FastAPI. A interface deve mostrar mensagens claras sem expor detalhes internos.
-- Atualizar a página não elimina por si só as tarefas guardadas no processo. Reiniciar ou recriar o processo da aplicação perde os dados; a execução pode começar novamente sem tarefas. Não há garantia de persistência.
+- Atualizar a página não elimina por si só as tarefas guardadas no processo. Reiniciar ou recriar o processo da aplicação preserva as tarefas e estados no PostgreSQL enquanto o volume postgres_data for mantido.
 
 ## Requisitos não funcionais e critérios verificáveis
 
 | ID | Requisito | Critério de aceitação |
 | --- | --- | --- |
 | RNF-01 | Acesso local | Interface acessível em `http://localhost:8080` enquanto o serviço está em execução. |
-| RNF-02 | Docker | Um único serviço, `Dockerfile` e `compose.yaml`; porta `127.0.0.1:8080:8000` (host → container), sem dependência de serviços pagos. |
+| RNF-02 | Docker | Dois serviços (smarttasks e db), `Dockerfile` e `compose.yaml`; porta `127.0.0.1:8080:8000` (host → container), sem dependência de serviços pagos. |
 | RNF-03 | Simplicidade | HTML simples, navegação compreensível, lista vazia informativa, criação e transições disponíveis sem login ou permissões diferenciadas. |
-| RNF-04 | Modularidade | Rotas HTTP separadas da lógica de tarefas e do armazenamento em memória; organização documentada e verificável por inspeção. |
-| RNF-05 | Dados temporários | Dados permanecem disponíveis em pedidos sucessivos enquanto o processo corre; recriar o processo elimina tarefas e não existe base de dados nem volume de persistência. |
+| RNF-04 | Modularidade | Rotas HTTP separadas da lógica de tarefas e do armazenamento PostgreSQL (e memória para testes isolados); organização documentada e verificável por inspeção. |
+| RNF-05 | Persistência | Tarefas e estados ficam no PostgreSQL e sobrevivem ao reinício/recriação da aplicação; a inicialização não apaga registos e o volume postgres_data é preservado. |
 | RNF-06 | Clareza pedagógica | Código e configuração com comentários explicativos úteis; cada teste identifica ID, objetivo, pré-condições, ação, resultado esperado e ligações a RF/RNF e US; README documenta instalação, execução e testes. |
 
 ## Percurso mínimo de aceitação
@@ -72,14 +72,14 @@ Exemplo de tarefa devolvida: `{"id":1,"title":"Preparar relatório","description
 6. Rejeitar título vazio, ID inexistente e transições repetidas com mensagens compreensíveis.
 7. Consultar `GET /health` e confirmar HTTP 200.
 8. Atualizar a página e verificar que a lista continua disponível enquanto o processo corre.
-9. Reiniciar/recriar o processo de aplicação e explicar a perda de dados em memória.
+9. Reiniciar/recriar a aplicação e verificar que tarefas e estados persistem no PostgreSQL.
 10. Executar o catálogo de testes de [05_rastreabilidade_e_testes.md](05_rastreabilidade_e_testes.md).
 
 ## Fora do MVP
 
 - Login, utilizadores e permissões; apagar/editar tarefas, prazos, prioridades e atribuições.
-- Base de dados, PostgreSQL e persistência de tarefas.
+- Migrações complexas, serviços de bases de dados externos e funcionalidades adicionais além da persistência PostgreSQL local.
 - Notificações e serviços cloud pagos.
 - Filas, CI/CD e observabilidade avançada.
 
-Estas evoluções podem ser discutidas pedagogicamente, mas não devem ser implementadas nesta fase.
+A evolução PostgreSQL aprovada mantém o contrato funcional e não acrescenta operações de negócio.
